@@ -141,6 +141,40 @@ public sealed class UrlRepository
         return records.FirstOrDefault();
     }
 
+    public async Task<IReadOnlyList<UrlRecord>> GetByIdsAsync(
+        IReadOnlyList<string> ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var placeholders = string.Join(", ", Enumerable.Repeat("?", ids.Count));
+        var sql =
+            $"""
+             SELECT
+                 id,
+                 url,
+                 original_url,
+                 title,
+                 saved_at,
+                 processing_status,
+                 processing_error,
+                 markdown_content,
+                 system_rating,
+                 ai_summary,
+                 ai_tags,
+                 ai_reasoning,
+                 source_application,
+                 tags
+             FROM urls
+             WHERE id IN ({placeholders})
+             """;
+
+        return await _d1Client.QueryAsync<UrlRecord>(sql, ids.Cast<object?>().ToArray(), cancellationToken);
+    }
+
     public async Task<bool> DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         var result = await _d1Client.ExecuteAsync(

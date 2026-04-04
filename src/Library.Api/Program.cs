@@ -5,6 +5,7 @@ using Library.Api.Content;
 using Library.Api.Database;
 using Library.Api.OpenAi;
 using Library.Api.Processing;
+using Library.Api.Search;
 using Library.Api.Urls;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,6 +70,7 @@ builder.Services.AddHttpClient<OpenAiClient>(client =>
 });
 builder.Services.AddScoped<AiAssessmentService>();
 builder.Services.AddScoped<EmbeddingService>();
+builder.Services.AddScoped<SearchService>();
 builder.Services.AddScoped<UrlRepository>();
 builder.Services.AddSingleton<UrlProcessingOrchestrator>();
 builder.Services.AddScoped<IUrlProcessingPipeline, LibraryPipeline>();
@@ -131,6 +133,22 @@ urls.MapGet("/", async ([AsParameters] UrlListRequest request, UrlRepository rep
 
     var records = await repository.GetAllAsync(request.PageSize, request.Offset, cancellationToken);
     return Results.Ok(records);
+});
+
+urls.MapGet("/search", async ([AsParameters] UrlSearchRequest request, SearchService searchService, CancellationToken cancellationToken) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Q))
+    {
+        return Results.BadRequest(new { error = "q is required." });
+    }
+
+    if (request.TopK <= 0 || request.TopK > 20)
+    {
+        return Results.BadRequest(new { error = "topK must be between 1 and 20." });
+    }
+
+    var results = await searchService.SearchAsync(request.Q, request.TopK, cancellationToken);
+    return Results.Ok(results);
 });
 
 urls.MapGet("/{id}", async (string id, UrlRepository repository, CancellationToken cancellationToken) =>
