@@ -1,0 +1,34 @@
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local tooling
+.codex/
+.codex
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# .NET build output
+bin/
+obj/
+
+# Node / Next.js output
+node_modules/
+.next/
+out/
+
+# Test and coverage artifacts
+coverage/
+test-results/
