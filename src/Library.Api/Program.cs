@@ -40,6 +40,9 @@ builder.Services
 builder.Services
     .AddOptions<AiAssessmentOptions>()
     .Bind(builder.Configuration.GetSection("Assessment"));
+builder.Services
+    .AddOptions<EmbeddingOptions>()
+    .Bind(builder.Configuration.GetSection("Embeddings"));
 
 builder.Services.AddHttpClient<D1Client>(client =>
 {
@@ -60,6 +63,7 @@ builder.Services.AddHttpClient<OpenAiClient>(client =>
     client.Timeout = TimeSpan.FromSeconds(60);
 });
 builder.Services.AddScoped<AiAssessmentService>();
+builder.Services.AddScoped<EmbeddingService>();
 builder.Services.AddScoped<UrlRepository>();
 builder.Services.AddSingleton<UrlProcessingOrchestrator>();
 builder.Services.AddScoped<IUrlProcessingPipeline, NoOpUrlProcessingPipeline>();
