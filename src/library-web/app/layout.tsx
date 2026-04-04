@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Library Lite",
-  description: "Minimal frontend scaffold for the Library Lite experience."
+  title: "Library",
+  description: "Minimal frontend scaffold for the Library web experience."
 };
 
 export default function RootLayout({

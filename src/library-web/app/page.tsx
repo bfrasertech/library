@@ -3,7 +3,7 @@ import { SiteShell } from "@/components/site-shell";
 export default function HomePage() {
   return (
     <SiteShell
-      eyebrow="Library Lite"
+      eyebrow="Library"
       title="A compact reading room for fast iteration."
       description="This scaffold establishes the Next.js app shell, route structure, and API configuration without committing to final product flows."
     >

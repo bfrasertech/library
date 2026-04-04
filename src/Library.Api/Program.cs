@@ -19,7 +19,7 @@ app.MapGet("/", (IConfiguration configuration) =>
 
     return Results.Ok(new
     {
-        service = "LibraryLite.Api",
+        service = "Library.Api",
         status = "ok",
         environment,
         contentSource = new
