@@ -1,15 +1,14 @@
+import { SearchClient } from "@/app/search-client";
 import { SiteShell } from "@/components/site-shell";
 
 export default function SearchPage() {
   return (
     <SiteShell
-      eyebrow="Route Placeholder"
+      eyebrow="Semantic Search"
       title="Search"
-      description="This page reserves the search surface while the indexing and query experience are still being defined."
+      description="Query the saved corpus by meaning instead of keywords. The backend embeds the query and asks Vectorize for the nearest article matches."
     >
-      <div className="rounded-[22px] border border-dashed border-[var(--border)] p-5 text-sm leading-7 text-[var(--muted)]">
-        Search results, query controls, and metadata panels will be added in a later task.
-      </div>
+      <SearchClient />
     </SiteShell>
   );
 }

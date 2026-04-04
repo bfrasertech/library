@@ -1,15 +1,14 @@
+import { ChatClient } from "@/app/chat-client";
 import { SiteShell } from "@/components/site-shell";
 
 export default function ChatPage() {
   return (
     <SiteShell
-      eyebrow="Route Placeholder"
+      eyebrow="Grounded Chat"
       title="Chat"
-      description="This page keeps the navigation and app structure in place without adding conversation logic yet."
+      description="Ask questions against the saved corpus. Answers are grounded in retrieved article context and should cite the matching saved items."
     >
-      <div className="rounded-[22px] border border-dashed border-[var(--border)] p-5 text-sm leading-7 text-[var(--muted)]">
-        Chat orchestration, prompt handling, and response rendering are intentionally out of scope for this scaffold.
-      </div>
+      <ChatClient />
     </SiteShell>
   );
 }

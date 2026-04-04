@@ -59,6 +59,11 @@ export async function listUrls(): Promise<UrlRecord[]> {
   return parseJson<UrlRecord[]>(response);
 }
 
+export async function getUrl(id: string): Promise<UrlRecord> {
+  const response = await fetch(`${getApiBaseUrl()}/api/urls/${id}`);
+  return parseJson<UrlRecord>(response);
+}
+
 export async function saveUrl(input: { url: string; title?: string }): Promise<UrlRecord> {
   const response = await fetch(`${getApiBaseUrl()}/api/urls`, {
     method: "POST",
@@ -69,4 +74,24 @@ export async function saveUrl(input: { url: string; title?: string }): Promise<U
   });
 
   return parseJson<UrlRecord>(response);
+}
+
+export async function searchUrls(query: string): Promise<SearchResultItem[]> {
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/urls/search?q=${encodeURIComponent(query)}`
+  );
+
+  return parseJson<SearchResultItem[]>(response);
+}
+
+export async function askChat(question: string): Promise<ChatResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ question })
+  });
+
+  return parseJson<ChatResponse>(response);
 }
