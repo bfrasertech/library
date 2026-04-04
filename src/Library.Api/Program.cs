@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Library.Api.Cloudflare;
 using Library.Api.Database;
+using Library.Api.Processing;
 using Library.Api.Urls;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +36,8 @@ builder.Services.AddHttpClient<D1Client>(client =>
     client.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/");
 });
 builder.Services.AddScoped<UrlRepository>();
+builder.Services.AddSingleton<UrlProcessingOrchestrator>();
+builder.Services.AddScoped<IUrlProcessingPipeline, NoOpUrlProcessingPipeline>();
 
 var app = builder.Build();
 
@@ -64,7 +67,11 @@ app.MapGet("/health", () => Results.Ok(new
 
 var urls = app.MapGroup("/api/urls");
 
-urls.MapPost("/", async (SaveUrlRequest request, UrlRepository repository, CancellationToken cancellationToken) =>
+urls.MapPost("/", async (
+    SaveUrlRequest request,
+    UrlRepository repository,
+    UrlProcessingOrchestrator orchestrator,
+    CancellationToken cancellationToken) =>
 {
     if (!TryBuildSaveUrlCommand(request, out var command, out var error))
     {
@@ -72,6 +79,7 @@ urls.MapPost("/", async (SaveUrlRequest request, UrlRepository repository, Cance
     }
 
     var record = await repository.SaveAsync(command!, cancellationToken);
+    orchestrator.Enqueue(record.Id);
     return Results.Accepted($"/api/urls/{record.Id}", record);
 });
 
