@@ -95,3 +95,15 @@ export async function askChat(question: string): Promise<ChatResponse> {
 
   return parseJson<ChatResponse>(response);
 }
+
+export async function deleteUrl(id: string): Promise<void> {
+  const response = await fetch(`${getApiBaseUrl()}/api/urls/${id}`, {
+    method: "DELETE"
+  });
+
+  if (response.ok) {
+    return;
+  }
+
+  await parseJson<never>(response);
+}

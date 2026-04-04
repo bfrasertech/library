@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState, useTransition } from "react";
 
+import { DeleteUrlButton } from "@/components/delete-url-button";
 import { UrlCard } from "@/components/url-card";
 import { listUrls, saveUrl, type UrlRecord } from "@/lib/api";
 
@@ -113,7 +114,16 @@ export function HomeClient() {
             </div>
           ) : null}
           {records.map((record) => (
-            <UrlCard key={record.id} record={record} />
+            <UrlCard
+              key={record.id}
+              record={record}
+              actions={
+                <DeleteUrlButton
+                  id={record.id}
+                  onDeleted={() => setRecords((current) => current.filter((item) => item.id !== record.id))}
+                />
+              }
+            />
           ))}
         </div>
       </section>

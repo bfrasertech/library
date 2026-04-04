@@ -1,11 +1,14 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { DeleteUrlButton } from "@/components/delete-url-button";
 import { SiteShell } from "@/components/site-shell";
 import { getUrl, type UrlRecord } from "@/lib/api";
 
 export function UrlDetailClient({ id }: { id: string }) {
+  const router = useRouter();
   const [record, setRecord] = useState<UrlRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +49,14 @@ export function UrlDetailClient({ id }: { id: string }) {
               <div className="mt-3 break-all font-mono text-xs text-[var(--foreground)]">{record.url}</div>
             </div>
           </section>
+
+          <DeleteUrlButton
+            id={record.id}
+            onDeleted={() => {
+              router.push("/");
+              router.refresh();
+            }}
+          />
 
           <section className="rounded-[22px] border border-[var(--border)] bg-white/40 p-5">
             <h2 className="text-lg">Summary</h2>
