@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Library.Api.Cloudflare;
 using Library.Api.Database;
+using Library.Api.Urls;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,7 @@ builder.Services.AddHttpClient<D1Client>(client =>
 {
     client.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/");
 });
+builder.Services.AddScoped<UrlRepository>();
 
 var app = builder.Build();
 
