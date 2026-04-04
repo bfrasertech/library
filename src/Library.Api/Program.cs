@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Library.Api.Assessment;
 using Library.Api.Cloudflare;
 using Library.Api.Content;
 using Library.Api.Database;
@@ -36,6 +37,9 @@ builder.Services
     .AddOptions<OpenAiOptions>()
     .Bind(builder.Configuration.GetSection("OpenAI"))
     .PostConfigure(options => options.ApplyOverrides(builder.Configuration));
+builder.Services
+    .AddOptions<AiAssessmentOptions>()
+    .Bind(builder.Configuration.GetSection("Assessment"));
 
 builder.Services.AddHttpClient<D1Client>(client =>
 {
@@ -55,6 +59,7 @@ builder.Services.AddHttpClient<OpenAiClient>(client =>
     client.BaseAddress = new Uri("https://api.openai.com/v1/");
     client.Timeout = TimeSpan.FromSeconds(60);
 });
+builder.Services.AddScoped<AiAssessmentService>();
 builder.Services.AddScoped<UrlRepository>();
 builder.Services.AddSingleton<UrlProcessingOrchestrator>();
 builder.Services.AddScoped<IUrlProcessingPipeline, NoOpUrlProcessingPipeline>();
