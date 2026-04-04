@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "library",
+  "compatibility_date": "2026-04-04",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "library-db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "d1/migrations"
+    }
+  ],
+  "vectorize": [
+    {
+      "binding": "VECTORIZE_INDEX",
+      "index_name": "library-vectors"
+    }
+  ]
+}
