@@ -23,17 +23,9 @@ public sealed class CloudflareOptions
 
     public void ValidateD1Configuration()
     {
+        ValidateApiAccess();
+
         var missingValues = new List<string>();
-
-        if (string.IsNullOrWhiteSpace(AccountId))
-        {
-            missingValues.Add(nameof(AccountId));
-        }
-
-        if (string.IsNullOrWhiteSpace(ApiToken))
-        {
-            missingValues.Add(nameof(ApiToken));
-        }
 
         if (string.IsNullOrWhiteSpace(D1DatabaseId))
         {
@@ -47,5 +39,28 @@ public sealed class CloudflareOptions
 
         throw new InvalidOperationException(
             $"Cloudflare D1 configuration is incomplete. Missing values: {string.Join(", ", missingValues)}.");
+    }
+
+    public void ValidateApiAccess()
+    {
+        var missingValues = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(AccountId))
+        {
+            missingValues.Add(nameof(AccountId));
+        }
+
+        if (string.IsNullOrWhiteSpace(ApiToken))
+        {
+            missingValues.Add(nameof(ApiToken));
+        }
+
+        if (missingValues.Count == 0)
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Cloudflare API configuration is incomplete. Missing values: {string.Join(", ", missingValues)}.");
     }
 }

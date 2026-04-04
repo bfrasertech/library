@@ -48,6 +48,11 @@ builder.Services.AddHttpClient<D1Client>(client =>
 {
     client.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/");
 });
+builder.Services.AddHttpClient<VectorizeClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 builder.Services.AddHttpClient<ContentExtractionService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(20);
