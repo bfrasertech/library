@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Library.Api.Assessment;
+using Library.Api.Chat;
 using Library.Api.Cloudflare;
 using Library.Api.Content;
 using Library.Api.Database;
@@ -70,6 +71,7 @@ builder.Services.AddHttpClient<OpenAiClient>(client =>
 });
 builder.Services.AddScoped<AiAssessmentService>();
 builder.Services.AddScoped<EmbeddingService>();
+builder.Services.AddScoped<RagService>();
 builder.Services.AddScoped<SearchService>();
 builder.Services.AddScoped<UrlRepository>();
 builder.Services.AddSingleton<UrlProcessingOrchestrator>();
@@ -171,6 +173,17 @@ urls.MapDelete("/{id}", async (string id, UrlRepository repository, Cancellation
 
     var deleted = await repository.DeleteAsync(id, cancellationToken);
     return deleted ? Results.NoContent() : Results.NotFound();
+});
+
+app.MapPost("/api/chat", async (ChatRequest request, RagService ragService, CancellationToken cancellationToken) =>
+{
+    if (string.IsNullOrWhiteSpace(request.Question))
+    {
+        return Results.BadRequest(new { error = "question is required." });
+    }
+
+    var response = await ragService.AskAsync(request.Question, cancellationToken);
+    return Results.Ok(response);
 });
 
 app.Run();
