@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Library.Api.Cloudflare;
+using Library.Api.Content;
 using Library.Api.Database;
 using Library.Api.Processing;
 using Library.Api.Urls;
@@ -34,6 +35,15 @@ builder.Services
 builder.Services.AddHttpClient<D1Client>(client =>
 {
     client.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/");
+});
+builder.Services.AddHttpClient<ContentExtractionService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(20);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Library.Api/1.0 (+https://example.local/library)");
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    AllowAutoRedirect = true,
+    MaxAutomaticRedirections = 10
 });
 builder.Services.AddScoped<UrlRepository>();
 builder.Services.AddSingleton<UrlProcessingOrchestrator>();
