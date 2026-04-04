@@ -2,6 +2,7 @@ using System.Text.Json;
 using Library.Api.Cloudflare;
 using Library.Api.Content;
 using Library.Api.Database;
+using Library.Api.OpenAi;
 using Library.Api.Processing;
 using Library.Api.Urls;
 
@@ -31,6 +32,10 @@ builder.Services
     .AddOptions<CloudflareOptions>()
     .Bind(builder.Configuration.GetSection("Cloudflare"))
     .PostConfigure(options => options.ApplyOverrides(builder.Configuration));
+builder.Services
+    .AddOptions<OpenAiOptions>()
+    .Bind(builder.Configuration.GetSection("OpenAI"))
+    .PostConfigure(options => options.ApplyOverrides(builder.Configuration));
 
 builder.Services.AddHttpClient<D1Client>(client =>
 {
@@ -44,6 +49,11 @@ builder.Services.AddHttpClient<ContentExtractionService>(client =>
 {
     AllowAutoRedirect = true,
     MaxAutomaticRedirections = 10
+});
+builder.Services.AddHttpClient<OpenAiClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com/v1/");
+    client.Timeout = TimeSpan.FromSeconds(60);
 });
 builder.Services.AddScoped<UrlRepository>();
 builder.Services.AddSingleton<UrlProcessingOrchestrator>();
