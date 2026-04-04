@@ -4,6 +4,7 @@ using Library.Api.Database;
 using Library.Api.Urls;
 
 var builder = WebApplication.CreateBuilder(args);
+const string LocalFrontendCorsPolicy = "LocalFrontend";
 
 builder.Configuration.AddEnvironmentVariables();
 
@@ -11,6 +12,17 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     options.SerializerOptions.WriteIndented = false;
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(LocalFrontendCorsPolicy, policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:3000", "http://127.0.0.1:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
 });
 
 builder.Services
@@ -25,6 +37,8 @@ builder.Services.AddHttpClient<D1Client>(client =>
 builder.Services.AddScoped<UrlRepository>();
 
 var app = builder.Build();
+
+app.UseCors(LocalFrontendCorsPolicy);
 
 app.MapGet("/", (IConfiguration configuration) =>
 {
@@ -48,4 +62,89 @@ app.MapGet("/health", () => Results.Ok(new
     status = "healthy"
 }));
 
+var urls = app.MapGroup("/api/urls");
+
+urls.MapPost("/", async (SaveUrlRequest request, UrlRepository repository, CancellationToken cancellationToken) =>
+{
+    if (!TryBuildSaveUrlCommand(request, out var command, out var error))
+    {
+        return Results.BadRequest(new { error });
+    }
+
+    var record = await repository.SaveAsync(command!, cancellationToken);
+    return Results.Accepted($"/api/urls/{record.Id}", record);
+});
+
+urls.MapGet("/", async ([AsParameters] UrlListRequest request, UrlRepository repository, CancellationToken cancellationToken) =>
+{
+    if (request.PageSize <= 0 || request.PageSize > 200)
+    {
+        return Results.BadRequest(new { error = "pageSize must be between 1 and 200." });
+    }
+
+    if (request.Offset < 0)
+    {
+        return Results.BadRequest(new { error = "offset must be zero or greater." });
+    }
+
+    var records = await repository.GetAllAsync(request.PageSize, request.Offset, cancellationToken);
+    return Results.Ok(records);
+});
+
+urls.MapGet("/{id}", async (string id, UrlRepository repository, CancellationToken cancellationToken) =>
+{
+    if (string.IsNullOrWhiteSpace(id))
+    {
+        return Results.BadRequest(new { error = "id is required." });
+    }
+
+    var record = await repository.GetByIdAsync(id, cancellationToken);
+    return record is null ? Results.NotFound() : Results.Ok(record);
+});
+
+urls.MapDelete("/{id}", async (string id, UrlRepository repository, CancellationToken cancellationToken) =>
+{
+    if (string.IsNullOrWhiteSpace(id))
+    {
+        return Results.BadRequest(new { error = "id is required." });
+    }
+
+    var deleted = await repository.DeleteAsync(id, cancellationToken);
+    return deleted ? Results.NoContent() : Results.NotFound();
+});
+
 app.Run();
+
+static bool TryBuildSaveUrlCommand(
+    SaveUrlRequest request,
+    out SaveUrlCommand? command,
+    out string? error)
+{
+    command = null;
+    error = null;
+
+    if (string.IsNullOrWhiteSpace(request.Url))
+    {
+        error = "url is required.";
+        return false;
+    }
+
+    if (!Uri.TryCreate(request.Url, UriKind.Absolute, out var parsedUrl) ||
+        (parsedUrl.Scheme != Uri.UriSchemeHttp && parsedUrl.Scheme != Uri.UriSchemeHttps))
+    {
+        error = "url must be a valid absolute http or https URL.";
+        return false;
+    }
+
+    var normalizedUrl = parsedUrl.ToString();
+    var originalUrl = string.IsNullOrWhiteSpace(request.OriginalUrl) ? normalizedUrl : request.OriginalUrl.Trim();
+
+    command = new SaveUrlCommand(
+        normalizedUrl,
+        originalUrl,
+        request.Title?.Trim(),
+        request.SourceApplication?.Trim(),
+        request.Tags?.Trim());
+
+    return true;
+}
