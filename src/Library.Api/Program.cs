@@ -73,6 +73,7 @@ builder.Services.AddScoped<AiAssessmentService>();
 builder.Services.AddScoped<EmbeddingService>();
 builder.Services.AddScoped<RagService>();
 builder.Services.AddScoped<SearchService>();
+builder.Services.AddScoped<UrlDeletionService>();
 builder.Services.AddScoped<UrlRepository>();
 builder.Services.AddSingleton<UrlProcessingOrchestrator>();
 builder.Services.AddScoped<IUrlProcessingPipeline, LibraryPipeline>();
@@ -164,15 +165,30 @@ urls.MapGet("/{id}", async (string id, UrlRepository repository, CancellationTok
     return record is null ? Results.NotFound() : Results.Ok(record);
 });
 
-urls.MapDelete("/{id}", async (string id, UrlRepository repository, CancellationToken cancellationToken) =>
+urls.MapDelete("/{id}", async (string id, UrlDeletionService deletionService, CancellationToken cancellationToken) =>
 {
     if (string.IsNullOrWhiteSpace(id))
     {
         return Results.BadRequest(new { error = "id is required." });
     }
 
-    var deleted = await repository.DeleteAsync(id, cancellationToken);
-    return deleted ? Results.NoContent() : Results.NotFound();
+    var result = await deletionService.DeleteAsync(id, cancellationToken);
+    if (result.Success)
+    {
+        return Results.NoContent();
+    }
+
+    if (result.CleanupBlocked)
+    {
+        return Results.Problem(
+            title: "Delete blocked by vector cleanup failure.",
+            detail: result.ErrorMessage,
+            statusCode: StatusCodes.Status409Conflict);
+    }
+
+    return result.ErrorCode == "not_found"
+        ? Results.NotFound()
+        : Results.BadRequest(new { error = result.ErrorMessage });
 });
 
 app.MapPost("/api/chat", async (ChatRequest request, RagService ragService, CancellationToken cancellationToken) =>
