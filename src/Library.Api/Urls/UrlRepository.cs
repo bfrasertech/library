@@ -169,6 +169,25 @@ public sealed class UrlRepository
         return (result.Changes ?? 0) > 0;
     }
 
+    public async Task<bool> UpdateExtractedContentAsync(
+        string id,
+        string? extractedTitle,
+        string markdownContent,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _d1Client.ExecuteAsync(
+            """
+            UPDATE urls
+            SET title = COALESCE(NULLIF(title, ''), ?),
+                markdown_content = ?
+            WHERE id = ?
+            """,
+            [extractedTitle, markdownContent, id],
+            cancellationToken);
+
+        return (result.Changes ?? 0) > 0;
+    }
+
     public async Task<bool> UpdateAssessmentAsync(
         string id,
         UrlAssessmentUpdate update,

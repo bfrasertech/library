@@ -71,7 +71,7 @@ builder.Services.AddScoped<AiAssessmentService>();
 builder.Services.AddScoped<EmbeddingService>();
 builder.Services.AddScoped<UrlRepository>();
 builder.Services.AddSingleton<UrlProcessingOrchestrator>();
-builder.Services.AddScoped<IUrlProcessingPipeline, NoOpUrlProcessingPipeline>();
+builder.Services.AddScoped<IUrlProcessingPipeline, LibraryPipeline>();
 
 var app = builder.Build();
 
