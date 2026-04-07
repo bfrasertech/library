@@ -61,7 +61,10 @@ public sealed class ContentExtractionService
                     "The source returned an empty HTML response.");
             }
 
-            var article = Reader.ParseArticle(response.RequestMessage?.RequestUri?.ToString() ?? url, html);
+            var article = Reader.ParseArticle(
+                response.RequestMessage?.RequestUri?.ToString() ?? url,
+                html,
+                null);
             if (!article.Completed)
             {
                 var errorMessage = article.Errors.FirstOrDefault()?.Message ?? "SmartReader could not complete extraction.";

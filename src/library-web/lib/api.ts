@@ -19,6 +19,23 @@ export type UrlRecord = {
   tags: string | null;
 };
 
+type UrlRecordApi = {
+  id: string;
+  url: string;
+  original_url: string;
+  title: string | null;
+  saved_at: string;
+  processing_status: string;
+  processing_error: string | null;
+  markdown_content: string | null;
+  system_rating: number | null;
+  ai_summary: string | null;
+  ai_tags: string | null;
+  ai_reasoning: string | null;
+  source_application: string | null;
+  tags: string | null;
+};
+
 export type SearchResultItem = {
   id: string;
   score: number;
@@ -36,6 +53,25 @@ export type ChatResponse = {
   answer: string;
   sources: ChatSource[];
 };
+
+function toUrlRecord(record: UrlRecordApi): UrlRecord {
+  return {
+    id: record.id,
+    url: record.url,
+    originalUrl: record.original_url,
+    title: record.title,
+    savedAt: record.saved_at,
+    processingStatus: record.processing_status,
+    processingError: record.processing_error,
+    markdownContent: record.markdown_content,
+    systemRating: record.system_rating,
+    aiSummary: record.ai_summary,
+    aiTags: record.ai_tags,
+    aiReasoning: record.ai_reasoning,
+    sourceApplication: record.source_application,
+    tags: record.tags
+  };
+}
 
 async function parseJson<T>(response: Response): Promise<T> {
   if (response.ok) {
@@ -56,12 +92,12 @@ async function parseJson<T>(response: Response): Promise<T> {
 
 export async function listUrls(): Promise<UrlRecord[]> {
   const response = await fetch(`${getApiBaseUrl()}/api/urls`);
-  return parseJson<UrlRecord[]>(response);
+  return (await parseJson<UrlRecordApi[]>(response)).map(toUrlRecord);
 }
 
 export async function getUrl(id: string): Promise<UrlRecord> {
   const response = await fetch(`${getApiBaseUrl()}/api/urls/${id}`);
-  return parseJson<UrlRecord>(response);
+  return toUrlRecord(await parseJson<UrlRecordApi>(response));
 }
 
 export async function saveUrl(input: { url: string; title?: string }): Promise<UrlRecord> {
@@ -73,7 +109,7 @@ export async function saveUrl(input: { url: string; title?: string }): Promise<U
     body: JSON.stringify(input)
   });
 
-  return parseJson<UrlRecord>(response);
+  return toUrlRecord(await parseJson<UrlRecordApi>(response));
 }
 
 export async function searchUrls(query: string): Promise<SearchResultItem[]> {
@@ -81,7 +117,12 @@ export async function searchUrls(query: string): Promise<SearchResultItem[]> {
     `${getApiBaseUrl()}/api/urls/search?q=${encodeURIComponent(query)}`
   );
 
-  return parseJson<SearchResultItem[]>(response);
+  const items = await parseJson<Array<{ id: string; score: number; record: UrlRecordApi }>>(response);
+  return items.map((item) => ({
+    id: item.id,
+    score: item.score,
+    record: toUrlRecord(item.record)
+  }));
 }
 
 export async function askChat(question: string): Promise<ChatResponse> {

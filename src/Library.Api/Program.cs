@@ -35,13 +35,16 @@ builder.Services
     .AddOptions<CloudflareOptions>()
     .Bind(builder.Configuration.GetSection("Cloudflare"))
     .PostConfigure(options => options.ApplyOverrides(builder.Configuration));
+
 builder.Services
     .AddOptions<OpenAiOptions>()
     .Bind(builder.Configuration.GetSection("OpenAI"))
     .PostConfigure(options => options.ApplyOverrides(builder.Configuration));
+
 builder.Services
     .AddOptions<AiAssessmentOptions>()
     .Bind(builder.Configuration.GetSection("Assessment"));
+
 builder.Services
     .AddOptions<EmbeddingOptions>()
     .Bind(builder.Configuration.GetSection("Embeddings"));
@@ -50,11 +53,13 @@ builder.Services.AddHttpClient<D1Client>(client =>
 {
     client.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/");
 });
+
 builder.Services.AddHttpClient<VectorizeClient>(client =>
 {
     client.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
+
 builder.Services.AddHttpClient<ContentExtractionService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(20);
@@ -64,11 +69,13 @@ builder.Services.AddHttpClient<ContentExtractionService>(client =>
     AllowAutoRedirect = true,
     MaxAutomaticRedirections = 10
 });
+
 builder.Services.AddHttpClient<OpenAiClient>(client =>
 {
     client.BaseAddress = new Uri("https://api.openai.com/v1/");
     client.Timeout = TimeSpan.FromSeconds(60);
 });
+
 builder.Services.AddScoped<AiAssessmentService>();
 builder.Services.AddScoped<EmbeddingService>();
 builder.Services.AddScoped<RagService>();

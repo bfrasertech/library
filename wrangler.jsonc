@@ -4,16 +4,16 @@
   "compatibility_date": "2026-04-04",
   "d1_databases": [
     {
-      "binding": "DB",
-      "database_name": "library-db",
-      "database_id": "00000000-0000-0000-0000-000000000000",
-      "migrations_dir": "d1/migrations"
-    }
+      "binding": "library_lite",
+      "database_name": "library-lite",
+      "database_id": "535b63c1-673c-48bf-ba98-b82ba6484111",
+      "migrations_dir": "d1/migrations",
+    },
   ],
   "vectorize": [
     {
-      "binding": "VECTORIZE_INDEX",
-      "index_name": "library-vectors"
-    }
-  ]
+      "binding": "VECTORIZE",
+      "index_name": "library-lite-vectors",
+    },
+  ],
 }

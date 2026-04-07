@@ -82,16 +82,24 @@ public sealed class OpenAiClient
         };
 
         var root = await SendAsync("responses", payload, cancellationToken);
-        var id = root.GetProperty("id").GetString()
+        if (!root.TryGetProperty("id", out var idProperty) || idProperty.ValueKind != JsonValueKind.String)
+        {
+            throw new InvalidOperationException("OpenAI response payload did not include a string id.");
+        }
+
+        var id = idProperty.GetString()
             ?? throw new InvalidOperationException("OpenAI response payload did not include an id.");
         var status = root.TryGetProperty("status", out var statusProperty)
+            && statusProperty.ValueKind == JsonValueKind.String
             ? statusProperty.GetString() ?? "unknown"
             : "unknown";
         var outputText = ExtractOutputText(root);
 
         return new OpenAiResponseResult(
             id,
-            root.TryGetProperty("model", out var modelProperty) ? modelProperty.GetString() ?? model : model,
+            root.TryGetProperty("model", out var modelProperty) && modelProperty.ValueKind == JsonValueKind.String
+                ? modelProperty.GetString() ?? model
+                : model,
             status,
             outputText,
             root.GetRawText());
@@ -126,9 +134,12 @@ public sealed class OpenAiClient
 
         using var document = JsonDocument.Parse(responseBody);
 
-        if (document.RootElement.TryGetProperty("error", out var errorElement))
+        if (document.RootElement.TryGetProperty("error", out var errorElement) &&
+            errorElement.ValueKind is not JsonValueKind.Null and not JsonValueKind.Undefined)
         {
-            var message = errorElement.TryGetProperty("message", out var messageElement)
+            var message = errorElement.ValueKind == JsonValueKind.Object &&
+                          errorElement.TryGetProperty("message", out var messageElement) &&
+                          messageElement.ValueKind == JsonValueKind.String
                 ? messageElement.GetString()
                 : errorElement.GetRawText();
 
@@ -157,6 +168,11 @@ public sealed class OpenAiClient
 
         foreach (var outputItem in outputProperty.EnumerateArray())
         {
+            if (outputItem.ValueKind != JsonValueKind.Object)
+            {
+                continue;
+            }
+
             if (!outputItem.TryGetProperty("content", out var contentProperty) ||
                 contentProperty.ValueKind != JsonValueKind.Array)
             {
@@ -165,6 +181,11 @@ public sealed class OpenAiClient
 
             foreach (var contentItem in contentProperty.EnumerateArray())
             {
+                if (contentItem.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
                 if (contentItem.TryGetProperty("text", out var textProperty) &&
                     textProperty.ValueKind == JsonValueKind.String)
                 {

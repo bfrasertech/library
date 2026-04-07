@@ -42,7 +42,7 @@ public sealed class VectorizeClient
             {
                 vector,
                 topK,
-                returnMetadata = true
+                returnMetadata = "none"
             },
             cancellationToken);
 
