@@ -49,6 +49,10 @@ builder.Services
     .AddOptions<EmbeddingOptions>()
     .Bind(builder.Configuration.GetSection("Embeddings"));
 
+builder.Services
+    .AddOptions<SearchOptions>()
+    .Bind(builder.Configuration.GetSection("Search"));
+
 builder.Services.AddHttpClient<D1Client>(client =>
 {
     client.BaseAddress = new Uri("https://api.cloudflare.com/client/v4/");
